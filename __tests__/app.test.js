@@ -14,14 +14,14 @@ describe('/api/articles/:article_id', () => {
             .get('/api/articles/1')
             .expect(200)
             .then((result) => {
-                expect(result.body).toHaveProperty('author');
-                expect(result.body).toHaveProperty('title');
-                expect(result.body).toHaveProperty('article_id', 1);
-                expect(result.body).toHaveProperty('body');
-                expect(result.body).toHaveProperty('topic');
-                expect(result.body).toHaveProperty('created_at');
-                expect(result.body).toHaveProperty('votes');
-                expect(result.body).toHaveProperty('article_img_url');
+                expect(result.body.article).toHaveProperty('author');
+                expect(result.body.article).toHaveProperty('title');
+                expect(result.body.article).toHaveProperty('article_id', 1);
+                expect(result.body.article).toHaveProperty('body');
+                expect(result.body.article).toHaveProperty('topic');
+                expect(result.body.article).toHaveProperty('created_at');
+                expect(result.body.article).toHaveProperty('votes');
+                expect(result.body.article).toHaveProperty('article_img_url');
             })
     })
     test('GET: 404 - error handling when not found', () => {
@@ -30,6 +30,14 @@ describe('/api/articles/:article_id', () => {
             .expect(404)
             .then((result) => {
                 expect(result.body.msg).toBe('Article not found');
+            })
+    })
+    test('GET: 400 - error handling when invalid id format', () => {
+        return request(app)
+            .get('/api/articles/invalid-id')
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe('Invalid ID format');
             })
     })
 })
