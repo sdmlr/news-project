@@ -25,5 +25,23 @@
         }
       ]
     }
+  },
+  "GET /api/articles/:article_id": {
+    "description": "Fetches an article by its ID",
+    "parameters": {
+      "article_id": "Unique identifier of the article"
+    },
+    "exampleResponse":{
+      "article": {
+        "author": "jessjelly",
+        "title": "A sample article",
+        "article_id": 1,
+        "body": "This is the content of the article.",
+        "topic": "coding",
+        "created_at": "2020-11-03T10:00:00.000Z",
+        "votes": 10,
+        "article_img_url": "https://example.com/image.jpg"
+      }
+    }
   }
 }
