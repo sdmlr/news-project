@@ -5,12 +5,54 @@ const data = require('../db/data/test-data')
 const db = require('../db/connection')
 const endpoints = require('../endpoints.json')
 
-beforeEach(() => {
-    return db.query('DELETE FROM comments;')
-        .then(() => db.query('DELETE FROM articles;'))
-        .then(() => seed(data))
-})
+beforeEach(() => seed(data))
 afterAll(() => db.end());
+
+describe('/api/articles/:article_id/comments', () => {
+    test('GET: 200 - responds with an array of comments for the given article_id of which each comment should have the following properties:', () => {
+        return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then((result) => {
+                expect(Array.isArray(result.body.comments)).toBe(true)
+                result.body.comments.forEach(comment => {
+                    expect(comment).toHaveProperty('comment_id', expect.any(Number))
+                    expect(comment).toHaveProperty('votes', expect.any(Number))
+                    expect(comment).toHaveProperty('created_at', expect.any(String))
+                    expect(comment).toHaveProperty('author', expect.any(String))
+                    expect(comment).toHaveProperty('body', expect.any(String))
+                    expect(comment).toHaveProperty('article_id', 1)
+                })
+            })
+    })
+    test('GET: 200 - responds with an empty array when no comments in the given article', () => {
+        return request(app)
+            .get('/api/articles/7/comments')
+            .expect(200)
+            .then((response) => {
+                const { comments } = response.body
+                expect(Array.isArray(comments)).toBe(true)
+                expect(comments.length).toBe(0)
+            })
+    })
+    test('GET: 400 - responds with "Bad Request" for invalid article_id', () => {
+        return request(app)
+            .get('/api/articles/fakenews/comments')
+            .expect(400)
+            .then((response) => {
+                expect(response.body.msg).toBe("Invalid ID Format")
+            })
+    })
+    test('GET: 404 - responds with "Not found" for a non existent article_id', () => {
+        return request(app)
+            .get('/api/articles/7777/comments')
+            .expect(404)
+            .then((response) => {
+                expect(response.body.msg).toBe("Article Not Found")
+            })
+    })
+
+})
 
 describe('/api/articles/:article_id', () => {
     test('GET: 200 - responds article object when a valid id is provided', () => {

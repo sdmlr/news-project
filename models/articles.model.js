@@ -18,3 +18,25 @@ exports.fetchArticleById = (article_id) => {
 
   return db.query(queryStr, [article_id]);
 };
+
+exports.fetchCommentsByArticle = (article_id) => {
+  return db
+    .query(
+      "SELECT comment_id, votes, created_at, author, body, article_id FROM comments WHERE article_id = $1 ORDER BY created_AT DESC;",
+      [article_id]
+    )
+    .then((result) => {
+      return result.rows;
+    });
+};
+
+exports.checkIfArticleEXist = (article_id) => {
+    return db
+        .query(
+            'SELECT * FROM articles WHERE article_id = $1;',
+            [article_id]
+        )
+        .then((result) => {
+            return result.rowCount > 0;
+        })
+}
