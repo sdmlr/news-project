@@ -15,8 +15,12 @@ app.get('/api/articles/:article_id', getArticleById)
 
 
 app.use((err, req, res, next) => {
-    console.log('Server error', err)
-    res.status(500).send({ msg: 'Internal Server Error'})
+    if (err.status) {
+        res.status(err.status).send({ msg: err.msg })
+    } else {
+        console.log('Server error', err)
+        res.status(500).send({ msg: 'Internal Server Error'})
+    }
 })
 
 

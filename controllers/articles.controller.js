@@ -2,15 +2,11 @@ const { fetchArticleById, fetchArticles } = require('../models/articles.model')
 
 exports.getArticles = (req, res, next) => {
     fetchArticles()
-        .then(result => {
-            if (result.rows.length === 0) {
-                return Promise.reject({ msg: "No articles found"})
-            }
-            res.status(200).send(result.rows)
+        .then(articles => {
+            res.status(200).send({ articles })
         })
         .catch(err => {
-            console.error(err);
-            res.status(500).send({ msg: 'Internal Server Error' });
+            next(err)
         })
 }
 

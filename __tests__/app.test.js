@@ -5,7 +5,11 @@ const data = require('../db/data/test-data')
 const db = require('../db/connection')
 const endpoints = require('../endpoints.json')
 
-beforeEach(() => seed(data));
+beforeEach(() => {
+    return db.query('DELETE FROM comments;')
+        .then(() => db.query('DELETE FROM articles;'))
+        .then(() => seed(data))
+})
 afterAll(() => db.end());
 
 describe('/api/articles/:article_id', () => {
@@ -49,27 +53,31 @@ describe('/api/articles', () => {
             .expect(200)
             .then((response) => {
                 expect(typeof response.body).toBe('object')
-                expect(response.body.length).toBe(13)                
-                response.body.forEach(article => {
-                    expect(article).toHaveProperty('author')
-                    expect(article).toHaveProperty('title')
-                    expect(article).toHaveProperty('article_id')
-                    expect(article).toHaveProperty('topic')
-                    expect(article).toHaveProperty('created_at')
-                    expect(article).toHaveProperty('votes')
-                    expect(article).toHaveProperty('article_img_url')
-                    expect(article).toHaveProperty('comment_count')
+                expect(response.body.articles.length).toBe(13)                
+                response.body.articles.forEach(article => {
+                    expect(article).toHaveProperty('author', expect.any(String))
+                    expect(article).toHaveProperty('title', expect.any(String))
+                    expect(article).toHaveProperty('article_id', expect.any(Number))
+                    expect(article).toHaveProperty('topic', expect.any(String))
+                    expect(article).toHaveProperty('created_at', expect.any(String))
+                    expect(article).toHaveProperty('votes', expect.any(Number))
+                    expect(article).toHaveProperty('article_img_url', expect.any(String))
+                    expect(article).toHaveProperty('comment_count', expect.any(Number))
                     expect(article).not.toHaveProperty('body')
 
                 })
             })
     })
-    test.skip('GET 404 when no articles found', () => {
-        return request(app)
-            .get('/api/not-an-article')
-            .expect(404)
-            .then((response) => {
-                expect(response.body.msg).toBe('No articles found')
+    test('GET 404 when no articles found', () => {
+        return db.query('DELETE FROM comments;')
+            .then(() => db.query('DELETE FROM articles;'))
+            .then(() => {
+                return request(app)
+                    .get('/api/articles')
+                    .expect(404)
+                    .then((response) => {
+                        expect(response.body.msg).toBe('No articles found')
+                    })
             })
     })
 })
