@@ -1,4 +1,5 @@
-const { fetchArticleById, fetchArticles, fetchCommentsByArticle, checkIfArticleEXist, insertComment } = require('../models/articles.model')
+const format = require('pg-format')
+const { fetchArticleById, fetchArticles, fetchCommentsByArticle, checkIfArticleEXist, insertComment, updateVotes } = require('../models/articles.model')
 
 exports.getArticles = (req, res, next) => {
     fetchArticles()
@@ -62,10 +63,10 @@ exports.addComment = (req, res, next) => {
     const { username, body } = req.body
 
     if (isNaN(article_id)) {
-        return res.status(400).send({ msg: 'Invalid ID Format'})
+        return next({ status: 400, msg: 'Invalid ID Format'})
     }
     if (!username || !body) {
-        return res.status(400).send({ msg: 'Bad Request' })
+        return next({ status: 400, msg:'Bad Request' })
     }
 
     insertComment(article_id, username, body)
@@ -77,5 +78,26 @@ exports.addComment = (req, res, next) => {
                 return next({ status: 404, msg: 'Article or user not found'})
             }
             next(err);
+        })
+}
+
+exports.updateArticle = (req, res, next) => {
+    const { article_id } = req.params
+    const { inc_votes } = req.body
+
+    if(isNaN(article_id)) {
+        return next({ status: 400, msg: 'Invalid ID format'})
+    }
+
+    if (typeof inc_votes !== 'number') {
+        return next({ status: 400, msg: 'Bad Request'})
+    }
+
+    updateVotes(article_id, inc_votes)
+        .then((updatedArticle) => {
+            res.status(200).send({ article: updatedArticle })
+        })
+        .catch((err) => {
+            next(err)
         })
 }
