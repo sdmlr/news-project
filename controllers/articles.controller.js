@@ -1,4 +1,4 @@
-const { fetchArticleById, fetchArticles, fetchCommentsByArticle, checkIfArticleEXist } = require('../models/articles.model')
+const { fetchArticleById, fetchArticles, fetchCommentsByArticle, checkIfArticleEXist, insertComment } = require('../models/articles.model')
 
 exports.getArticles = (req, res, next) => {
     fetchArticles()
@@ -56,3 +56,26 @@ exports.getCommentsByArticle = (req, res, next) => {
             next(err);
         });
 };
+
+exports.addComment = (req, res, next) => {
+    const { article_id } = req.params
+    const { username, body } = req.body
+
+    if (isNaN(article_id)) {
+        return res.status(400).send({ msg: 'Invalid ID Format'})
+    }
+    if (!username || !body) {
+        return res.status(400).send({ msg: 'Bad Request' })
+    }
+
+    insertComment(article_id, username, body)
+        .then((newComment) => {
+            res.status(201).send({ comment: newComment})
+        })
+        .catch((err) => {
+            if (err.code === '23503') {
+                return next({ status: 404, msg: 'Article or user not found'})
+            }
+            next(err);
+        })
+}

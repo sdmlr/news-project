@@ -31,12 +31,20 @@ exports.fetchCommentsByArticle = (article_id) => {
 };
 
 exports.checkIfArticleEXist = (article_id) => {
-    return db
-        .query(
-            'SELECT * FROM articles WHERE article_id = $1;',
-            [article_id]
-        )
-        .then((result) => {
-            return result.rowCount > 0;
-        })
-}
+  return db
+    .query("SELECT * FROM articles WHERE article_id = $1;", [article_id])
+    .then((result) => {
+      return result.rowCount > 0;
+    });
+};
+
+exports.insertComment = (article_id, username, body) => {
+  const queryStr =
+    "INSERT INTO comments (article_id, author, body, created_at, votes) VALUES ($1, $2, $3, NOW(), 0) RETURNING *;";
+
+  return db
+    .query(queryStr, [article_id, username, body])
+    .then((result) => {
+      return result.rows[0];
+    });
+};
