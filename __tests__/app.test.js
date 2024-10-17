@@ -5,12 +5,98 @@ const data = require('../db/data/test-data')
 const db = require('../db/connection')
 const endpoints = require('../endpoints.json')
 
-beforeEach(() => {
-    return db.query('DELETE FROM comments;')
-        .then(() => db.query('DELETE FROM articles;'))
-        .then(() => seed(data))
-})
+beforeEach(() => seed(data))
 afterAll(() => db.end());
+
+describe('POST', () => {
+    describe('/api/articles/:article_id/comments', () => {
+        test('POST: 201 - post a new comment and its properties', () => {
+            return request(app)
+                .post('/api/articles/1/comments')
+                .send({ username: 'butter_bridge', body: 'Fantastic!'})
+                .expect(201)
+                .then((response) => {
+                    expect(response.body.comment).toHaveProperty('comment_id', expect.any(Number))
+                    expect(response.body.comment).toHaveProperty('author', 'butter_bridge')
+                    expect(response.body.comment).toHaveProperty('article_id', 1)
+                    expect(response.body.comment).toHaveProperty('body', 'Fantastic!')
+                })
+        })
+        test('POST: 400 - responds with "Invalid ID Format" for invalid article_id', () => {
+            return request(app)
+                .post('/api/articles/inval-id/comments')
+                .send({ username: 'butter_bridge', body: 'Interesting!' })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.msg).toBe('Invalid ID Format')
+                })
+        })
+        test('POST: 400 - response with Bad Request when missing fields', () => {
+            return request(app)
+                .post('/api/articles/1/comments')
+                .send({ username: 'butter_bridge' })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.msg).toBe('Bad Request')
+                })
+        })
+        test('POST: 404 - response with "Article or user not found" for non-existent article_id', () => {
+            return request(app)
+                .post('/api/articles/999/comments')
+                .send({ username: 'butter_bridge', body: 'GREAT JOB!!' })
+                .expect(404)
+                .then((response) => {
+                    expect(response.body.msg).toBe('Article or user not found')
+                })
+        })
+    })
+})
+
+describe('/api/articles/:article_id/comments', () => {
+    test('GET: 200 - responds with an array of comments for the given article_id of which each comment should have the following properties:', () => {
+        return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then((result) => {
+                expect(Array.isArray(result.body.comments)).toBe(true)
+                result.body.comments.forEach(comment => {
+                    expect(comment).toHaveProperty('comment_id', expect.any(Number))
+                    expect(comment).toHaveProperty('votes', expect.any(Number))
+                    expect(comment).toHaveProperty('created_at', expect.any(String))
+                    expect(comment).toHaveProperty('author', expect.any(String))
+                    expect(comment).toHaveProperty('body', expect.any(String))
+                    expect(comment).toHaveProperty('article_id', 1)
+                })
+            })
+    })
+    test('GET: 200 - responds with an empty array when no comments in the given article', () => {
+        return request(app)
+            .get('/api/articles/7/comments')
+            .expect(200)
+            .then((response) => {
+                const { comments } = response.body
+                expect(Array.isArray(comments)).toBe(true)
+                expect(comments.length).toBe(0)
+            })
+    })
+    test('GET: 400 - responds with Bad Request for invalid article_id', () => {
+        return request(app)
+            .get('/api/articles/fakenews/comments')
+            .expect(400)
+            .then((response) => {
+                expect(response.body.msg).toBe("Invalid ID Format")
+            })
+    })
+    test('GET: 404 - responds with "Not found" for a non existent article_id', () => {
+        return request(app)
+            .get('/api/articles/7777/comments')
+            .expect(404)
+            .then((response) => {
+                expect(response.body.msg).toBe("Article Not Found")
+            })
+    })
+
+})
 
 describe('/api/articles/:article_id', () => {
     test('GET: 200 - responds article object when a valid id is provided', () => {
@@ -81,7 +167,6 @@ describe('/api/articles', () => {
             })
     })
 })
-
 
 describe('/api/topics', () => {
     test('GET: 200 sends an array of topics', () => {
