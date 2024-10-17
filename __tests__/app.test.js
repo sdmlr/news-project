@@ -8,6 +8,41 @@ const endpoints = require('../endpoints.json')
 beforeEach(() => seed(data))
 afterAll(() => db.end());
 
+describe('PATCH', () => {
+    describe('/api/articles/:article_id', () => {
+        test('PATCH: 200 - update the votes and responds with updated article', () => {
+            return request(app)
+                .patch('/api/articles/1')
+                .send({ inc_votes: 10 })
+                .expect(200)
+                .then((response) => {
+                    const { article } = response.body  
+                    expect(article).toHaveProperty('votes', expect.any(Number))
+                    expect(article.votes).toBeGreaterThan(0)
+                    expect(article).toHaveProperty('article_id', 1)                  
+                })
+        })
+        test('PATCH: 400 - "Bad request" for missing field', () => {
+            return request(app)
+            .patch('/api/articles/99')
+            .send({})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.msg).toBe("Bad Request")
+            })
+        })
+        test('PATCH: 404 - "Article Not Found"', () => {
+            return request(app)
+            .patch('/api/articles/99')
+            .send({ inc_votes: 10 })
+            .expect(404)
+            .then((response) => {
+                expect(response.body.msg).toBe("Article Not Found")
+            })
+        })
+    })
+})
+
 describe('POST', () => {
     describe('/api/articles/:article_id/comments', () => {
         test('POST: 201 - post a new comment and its properties', () => {
