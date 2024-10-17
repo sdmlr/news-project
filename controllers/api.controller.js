@@ -6,7 +6,7 @@ exports.getApiDocs = (req, res, next) => {
 
     fs.readFile(filePath, 'utf-8', (err, data) => {
         if (err) {
-            res.status(500).send({ msg: 'Internal Server Error' });
+            return next(err);
         } else {
             res.status(200).send(JSON.parse(data))
         }
