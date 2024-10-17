@@ -1,4 +1,4 @@
-const { fetchArticleById, fetchArticles } = require('../models/articles.model')
+const { fetchArticleById, fetchArticles, fetchCommentsByArticle, checkIfArticleEXist } = require('../models/articles.model')
 
 exports.getArticles = (req, res, next) => {
     fetchArticles()
@@ -9,6 +9,7 @@ exports.getArticles = (req, res, next) => {
             next(err)
         })
 }
+
 
 exports.getArticleById = (req, res, next) => {
     const { article_id } = req.params;
@@ -29,5 +30,29 @@ exports.getArticleById = (req, res, next) => {
         .catch(err => {
             console.error(err)
             res.status(500).send({ msg: 'Internal Server Error' });
+        });
+};
+
+
+exports.getCommentsByArticle = (req, res, next) => {
+    const { article_id } = req.params
+    const regex = /^\d+$/;
+
+    if (!regex.test(article_id)) {
+        return res.status(400).send({ msg: "Invalid ID Format"})
+    }
+
+    checkIfArticleEXist(article_id)
+    .then((articleExist) => {
+        if (!articleExist) {
+            return Promise.reject({ status: 404, msg: 'Article Not Found'})
+        }
+        return fetchCommentsByArticle(article_id)
+    })
+        .then((comments) => {
+            res.status(200).send({ comments })
+        })
+        .catch((err) => {
+            next(err);
         });
 };
