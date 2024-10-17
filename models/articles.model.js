@@ -19,33 +19,11 @@ exports.fetchArticleById = (article_id) => {
   return db.query(queryStr, [article_id]);
 };
 
-exports.fetchCommentsByArticle = (article_id) => {
-  return db
-    .query(
-      "SELECT comment_id, votes, created_at, author, body, article_id FROM comments WHERE article_id = $1 ORDER BY created_AT DESC;",
-      [article_id]
-    )
-    .then((result) => {
-      return result.rows;
-    });
-};
-
-exports.checkIfArticleEXist = (article_id) => {
+exports.checkIfArticleExist = (article_id) => {
   return db
     .query("SELECT * FROM articles WHERE article_id = $1;", [article_id])
     .then((result) => {
       return result.rowCount > 0;
-    });
-};
-
-exports.insertComment = (article_id, username, body) => {
-  const queryStr =
-    "INSERT INTO comments (article_id, author, body, created_at, votes) VALUES ($1, $2, $3, NOW(), 0) RETURNING *;";
-
-  return db
-    .query(queryStr, [article_id, username, body])
-    .then((result) => {
-      return result.rows[0];
     });
 };
 
