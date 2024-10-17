@@ -8,6 +8,32 @@ const endpoints = require('../endpoints.json')
 beforeEach(() => seed(data))
 afterAll(() => db.end());
 
+describe('DELETE', () => {
+    describe('/api/comments/:comment_id', () => {
+        test('DELETE: 204 - deletes the comment', () => {
+            return request(app)
+            .delete('/api/comments/1')
+            .expect(204);
+        })
+        test('DELETE: 400 - responds with "Invalid ID format"', () => {
+            return request(app)
+            .delete('/api/comments/notAnId')
+            .expect(400)
+            .then((response) => {
+                expect(response.body.msg).toBe('Invalid ID format')
+            })
+        })
+        test('DELETE: 404 - responds with "Comment not found" when deleting', () => {
+            return request(app)
+            .delete('/api/comments/999')
+            .expect(404)
+            .then((response) => {
+                expect(response.body.msg).toBe('Comment not found')
+            })
+        })
+    })
+})
+
 describe('PATCH', () => {
     describe('/api/articles/:article_id', () => {
         test('PATCH: 200 - update the votes and responds with updated article', () => {
