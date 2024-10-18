@@ -246,6 +246,19 @@ describe("GET", () => {
           });
         });
     });
+    test("GET: 200 - filter artciles by topic", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeInstanceOf(Array);
+          expect(articles).toHaveLength(12);
+          articles.forEach((article) => {
+            expect(article.topic).toBe("mitch");
+          });
+        });
+    });
     test("GET: 200 - returns articles sorted by created_at in descending order", () => {
       return request(app)
         .get("/api/articles")
@@ -270,12 +283,20 @@ describe("GET", () => {
     });
     test("GET: 400 - responds with error when invalid sort column", () => {
       return request(app)
-      .get('/api/articles?sort_by=invalidcolumn')
-      .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toBe('Invalid sort column')
-      })
-    })
+        .get("/api/articles?sort_by=invalidcolumn")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid sort column");
+        });
+    });
+    test("GET: 404 - responds with error when non-existent topic", () => {
+      return request(app)
+        .get("/api/articles?topic=non-existent")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("No articles found");
+        });
+    });
     test("GET: 404 when no articles found", () => {
       return db
         .query("DELETE FROM comments;")
