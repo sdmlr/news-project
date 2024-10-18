@@ -1,11 +1,9 @@
 const db = require("../db/connection");
 
-const fetchTopics = () => {
-  const queryStr = "SELECT * FROM topics;";
+exports.fetchUsers = () => {
+  const queryStr = "SELECT username, name, avatar_url FROM users;";
 
   return db.query(queryStr).then((result) => {
     return result.rows;
   });
 };
-
-module.exports = { fetchTopics };
