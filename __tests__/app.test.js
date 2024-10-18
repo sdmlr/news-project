@@ -189,6 +189,25 @@ describe("GET", () => {
   });
 
   describe("/api/articles/:article_id", () => {
+    test('GET: 200 - responds with the article including comment_count', () => {
+      return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((response) => {
+          const { article } = response.body
+          expect(article).toHaveProperty('comment_count', expect.any(Number))
+          expect(article.comment_count).toBe(11)
+        })
+    })
+    test('GET: 200 - responds with the article including comment_count of 0 when no comments', () => {
+      return request(app)
+        .get('/api/articles/7')
+        .expect(200)
+        .then((response) => {
+          const { article } = response.body
+          expect(article).toHaveProperty('comment_count', 0)
+        })
+    })
     test("GET: 200 - responds article object when a valid id is provided", () => {
       return request(app)
         .get("/api/articles/1")

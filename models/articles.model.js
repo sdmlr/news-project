@@ -22,14 +22,14 @@ exports.fetchArticles = (sort_by = "created_at", order = "desc", topic) => {
 
   let queryStr = `SELECT a.article_id, a.title, a.author, a.topic, a.created_at, a.votes, a.article_img_url, CAST(COUNT(c.comment_id) AS INT) AS comment_count FROM articles AS a LEFT JOIN comments AS c ON a.article_id = c.article_id`;
 
-  const queryParams = []
+  const queryParams = [];
 
   if (topic) {
-    queryStr += ` WHERE a.topic = $1`
-    queryParams.push(topic)
+    queryStr += ` WHERE a.topic = $1`;
+    queryParams.push(topic);
   }
 
-  queryStr += ` GROUP BY a.article_id ORDER BY ${sort_by} ${order.toUpperCase()};`
+  queryStr += ` GROUP BY a.article_id ORDER BY ${sort_by} ${order.toUpperCase()};`;
 
   return db.query(queryStr, queryParams).then((result) => {
     if (result.rows.length === 0) {
@@ -40,9 +40,20 @@ exports.fetchArticles = (sort_by = "created_at", order = "desc", topic) => {
 };
 
 exports.fetchArticleById = (article_id) => {
-  const queryStr = "SELECT * FROM articles WHERE article_id = $1;";
+  const queryStr = `
+    SELECT a.article_id, a.title, a.author, a.topic, a.created_at, a.votes, a.body, a.article_img_url,
+      CAST(COUNT(c.comment_id) AS INT) AS comment_count
+    FROM articles AS a
+    LEFT JOIN comments AS c ON a.article_id = c.article_id
+    WHERE a.article_id = $1
+    GROUP BY a.article_id;`;
 
-  return db.query(queryStr, [article_id]);
+  return db.query(queryStr, [article_id]).then((result) => {
+    if (result.rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "Article not found" });
+    }
+    return result.rows[0];
+  });
 };
 
 exports.checkIfArticleExist = (article_id) => {
