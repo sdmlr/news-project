@@ -4,6 +4,7 @@ const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 const db = require("../db/connection");
 const endpoints = require("../endpoints.json");
+require("jest-sorted");
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
@@ -245,7 +246,37 @@ describe("GET", () => {
           });
         });
     });
-    test("GET 404 when no articles found", () => {
+    test("GET: 200 - returns articles sorted by created_at in descending order", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeInstanceOf(Array);
+          expect(articles).toHaveLength(13);
+          expect(articles).toBeSortedBy("created_at", { descending: true });
+        });
+    });
+    test("GET: 200 - returns articles sorted by votes column", () => {
+      return request(app)
+        .get("/api/articles?sort_by=votes&order=desc")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeInstanceOf(Array);
+          expect(articles).toHaveLength(13);
+          expect(articles).toBeSortedBy("votes", { descending: true });
+        });
+    });
+    test("GET: 400 - responds with error when invalid sort column", () => {
+      return request(app)
+      .get('/api/articles?sort_by=invalidcolumn')
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Invalid sort column')
+      })
+    })
+    test("GET: 404 when no articles found", () => {
       return db
         .query("DELETE FROM comments;")
         .then(() => db.query("DELETE FROM articles;"))
