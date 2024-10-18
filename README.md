@@ -1,18 +1,19 @@
 # Northcoders News API
 
-## Project Setup
+## Project Overview
 
 This project is a backend service for a news API, mimicking the backend of reddit. 
 
+## Hosted Version
+The hosted version of the API is available at: [News Project API on Render](https://news-project-fe7s.onrender.com/)
 
 ### Prerequisites
 
-**Install:**
-- Node.js
-- PostgreSQL
-- npm
+- **Node.js**: Minimum version 18.0.0
+- **PostgreSQL**: Minimum version 14.0.0
+- **npm**: Node Package Manager, included with Node.js
 
-
+## Project Setup
 
 ### Installation
 
@@ -29,9 +30,14 @@ This project is a backend service for a news API, mimicking the backend of reddi
 
 3. **Set up environment variables**
     
-    Create a `.env.development` file in the root directory.
-    Inside `.env.development`, add:
-    ```PGDATABASE=your_development_database_name```
+    - Create a `.env.development` file in the root directory with:
+      ```plaintext
+      PGDATABASE=nc_news
+      ```
+    - Create a `.env.test` file in the root directory with:
+      ```plaintext
+      PGDATABASE=nc_news_test
+      ```
 
 4. **Set up database**
     ```bash
